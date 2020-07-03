@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--弹窗的代码-->
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+	<link rel="stylesheet" href="/admin/css/table_edit.css">
+	<link rel="stylesheet" href="/admin/css/iconfont.css">
+</head>
+<body>
+<div class="tops">基本设置<span class='iconfont' style='font-size:28px;'>&#xe605;</span><span class="back_btn" onclick="history.back()">返回</span></div>
+    <table>
+        <tr>
+            <td>网站标题</td>
+            <td><input type="text" class="title"></td>
+        </tr>
+        <tr>
+            <td>关键字</td>
+            <td><input type="text" class="keywords"></td>
+        </tr>
+        <tr>
+            <td>描述</td>
+            <td>
+                <textarea class="description"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>PC端LOGO</td>
+            <td>
+                <input type="file" id="logo_pc" style="display: none">
+                <img src="img/upimg.jpg" class="logo_pc_img" width="100"><span class='img_info'>*图片大小不能超过400kb</span>
+                <script>
+				var isImg=false;
+                    function upImg(img,file,filesize){
+                    //实现点图片相当于点file标签
+                        $(img).click(function(){$(file).click();})
+                        //实现选中图片后直接上传图片
+                        $(file).change(function(){
+                            //判断是否是图片
+                            var fd=$(this)[0].files[0];
+                            //$(this)[0]相当于document.getElementById("logo_pg");
+                            if(fd.name.match(/\.(png|jpg|jpeg|gif|svg)$/)){
+								isImg=false;
+                                //是图片可以上传 也可以控制一下上传的大小
+                               // console.log(Math.floor(fd.size/1024))//文件字节大小单位 如果要转成kb就要/1024
+                                //如果图片大小超过400kb就不允许上传 if(Math.floor(fd.size/1024)>400)
+                                if(Math.floor(fd.size/1024)>filesize){
+                                    alert("图片不能大于"+filesize+"kb");
+                                }else{
+                                    //可以上传 写ajax
+                                    var f=new FormData();f.append("imgxx",fd);
+                                    $.ajax({
+                                        url:"/admin/upImg",
+                                        method:"post",
+                                        contentType:false,
+                                        processData:false,
+                                        data:f,
+                                        success:function(data){
+                                            if(data){
+                                                $(img).attr({src:"/"+data});
+                                            }
+                                        }
+                                    })
+									isImg=true;
+                                }
+                            }else{
+                                //不是图片不能上传哦
+								var M={};
+								if(M.dialog1){
+									return M.dialog1.show();
+								}
+								M.dialog1 = jqueryAlert({
+									'content' : '不是图片不能上传哦!'
+								})
+                            }
+
+                        })
+                    }
+                    upImg(".logo_pc_img","#logo_pc",400)
+                </script>
+            </td>
+        </tr>
+        <tr>
+            <td>移动端LOGO</td>
+            <td>
+                <input type="file" id="logo_mobile" style="display: none">
+                <img src="img/upimg.jpg" class="logo_mobile_img" width="100">
+                <span class='img_info'>*图片大小不能超过200kb</span>
+                <script>
+                    upImg(".logo_mobile_img","#logo_mobile",200)
+                </script>
+            </td>
+        </tr>
+        <tr>
+            <td>邮箱</td>
+            <td><input type="text" class="email"></td>
+        </tr>
+        <tr>
+            <td>手机号码</td>
+            <td><input type="number" class="phone"></td>
+        </tr>
+        <tr>
+            <td>联系地址</td>
+            <td><input type="text" class="address"></td>
+        </tr>
+        <tr>
+            <td>QQ号码</td>
+            <td><input type="number" class="qq"> </td>
+        </tr>
+        <tr>
+            <td>微信号</td>
+            <td><input type="text" class="wechat"></td>
+        </tr>
+        <tr>
+            <td>icp备案号</td>
+            <td><input type="text" class="icps"></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <button class="sub">提交</button>
+            </td>
+        </tr>
+    </table>
+    <script>
+        //1.把数据里面的数据 放到当前 设置里面显示
+        var old={logo_pc:"",logo_mobile:""};
+        function select(){
+            $.ajax({
+                url:"/admin/websiteGet",
+                async:false,
+                success:function(data){
+                    //如果有insertId就说明是插入的数据
+                   if(data.insertId){
+                       SUB(data.insertId);
+                   }else{
+                       /*如果没有就说明是之前的数据
+                       就把数据展现到页面中
+                       */
+                       old.logo_pc=data.logo_pc;
+                       old.logo_mobile=data.logo_mobile;
+                       SUB(data.id)
+                       $(".title").val(data.title);
+                       $(".keywords").val(data.keywords);
+                       $(".description").val(data.description);
+                       if(data.logo_pc){
+                           $(".logo_pc_img").attr({src:data.logo_pc.replace(/^\w+/,"")});
+                       }
+                       if(data.logo_mobile){
+                           $(".logo_mobile_img").attr({src:data.logo_mobile.replace(/^\w+/,"")});
+                       }
+                       $(".email").val(data.email);
+                       $(".phone").val(data.phone);
+                       $(".address").val(data.address);
+                       $(".qq").val(data.qq);
+                       $(".wechat").val(data.wechat);
+                       $(".icps").val(data.icps);
+                   }
+                }
+            })
+        }
+        select();
+        //提交事件
+        function SUB(id){
+            //提交
+            $(".sub").click(function(){
+                var f=new FormData();
+                f.append("title",$(".title").val());
+                f.append("keywords",$(".keywords").val());
+                f.append("description",$(".description").val());
+                f.append("email",$(".email").val());
+                f.append("phone",$(".phone").val());
+                f.append("address",$(".address").val());
+                f.append("qq",$(".qq").val());
+                f.append("wechat",$(".wechat").val());
+                f.append("icps",$(".icps").val());
+                f.append("old_logo_pc",old.logo_pc);
+                f.append("old_logo_mobile",old.logo_mobile);
+                f.append("id",id);
+				f.append("logo_pc",$("#logo_pc")[0].files[0]);
+                f.append("logo_mobile",$("#logo_mobile")[0].files[0]);
+
+				//提交ajax之前最好判断一下 logo是否是图片是否超过文件大小，我这里省略了。。。。
+                //写ajax 更新数据
+                $.ajax({
+                        url:"/admin/websiteUpdate",
+                        method:"post",
+                        contentType:false,
+                        processData:false,
+                        data:f,
+                        success:function(data){
+                            if(data.affectedRows>0){
+                               var M={};
+								if(M.dialog1){
+									return M.dialog1.show();
+								}
+								M.dialog1 = jqueryAlert({
+									'content' : '更新成功!'
+								});
+								setTimeout(function(){location.reload(true);},1000)
+                            }else{
+                               var M={};
+								if(M.dialog1){
+									return M.dialog1.show();
+								}
+								M.dialog1 = jqueryAlert({
+									'content' : '更新失败!'
+								})
+                            }
+                        }
+                })
+            })
+        }
+    </script>
+</body>
+</html>

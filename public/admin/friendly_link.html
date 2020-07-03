@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--弹窗的代码-->
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+    <link rel="stylesheet" href="/admin/css/table.css">
+    <link rel="stylesheet" href="/admin/css/iconfont.css">
+</head>
+<body>
+<div class="tops">友链管理页面<span class='iconfont' style='font-size:28px;'>&#xe605;</span><span class="back_btn" onclick="history.back()">返回</span></div>
+<div class="tool">
+    <!--通过edit参数来 区分进入同一个页面的操作-->
+    <a href="/admin/friendly_linkEdit?edit=add"  class="adds">&nbsp;&nbsp;添加友情链接<span class='iconfont' style='font-size:26px;'>&#xe60f;</span></a>
+</div>
+
+<table class="box" border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th align="left">链接标题</th>
+        <th>链接地址</th>
+        <th>链接状态</th>
+        <th>链接排序</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<script>
+    function getNavList(){
+        $(".box tbody").html("")
+        $.ajax({
+            url:"/admin/friendly_linkList",
+            success:function(data){
+                $.each(data,function(k,v){
+                    var col1=$("<td>").text(v.id);
+                    var col2=$("<td style='text-align:left'>").text(v.linktitle);
+                    var col3=$("<td style='text-align:left'>").text(v.linkurl);
+                    var col4=$("<td>").html(parseInt(v.status) ? "<i class='iconfont' style='font-size: 30px'>&#xe606;</i>显示":"<i class='iconfont' style='font-size: 30px'>&#xe607;</i>隐藏");
+                    var col5=$("<td>").text(v.sort);
+                    var edit=$("<td>")
+                    var update=$("<a class='update_btn' href='/admin/friendly_linkEdit?edit=update&id="+ v.id+"'><span class='iconfont' style='font-size:23px;'>&#xe652;</span></a>");
+                    var del=$("<span class='del_btn'><span class='iconfont' style='font-size:23px;'>&#xe654;</span></span>").prop({id: v.id});
+                    del.click(function(){
+                        var id=$(this).prop("id");
+                        var M={}
+                        if(M.dialog3){
+                            return M.dialog3.show();
+                        }
+                        M.dialog3 = jqueryAlert({
+                            'title'   : '删除提示',
+                            'content' : '你确定要删除吗？',
+                            'modal'   : true,
+                            'width':'230px',
+                            'animateType' : 'linear',
+                            'buttons' :{
+                                '确定' : function(){
+                                    M.dialog3.close();
+                                    $.ajax({
+                                        url:"/admin/friendly_linkDel",
+                                        data:{id:id},
+                                        success:function(data){
+                                            if(data.affectedRows){
+                                                var M={}
+                                                if(M.dialog1){
+                                                    return M.dialog1.show();
+                                                }
+                                                M.dialog1 = jqueryAlert({
+                                                    'content' : "删了"+data.affectedRows+"个友链",
+                                                    'closeTime'    : 300,
+                                                })
+                                            }
+                                            setTimeout(function(){
+                                                getNavList()
+                                            },500)
+
+                                        }
+                                    })
+                                },
+                                '取消' : function(){
+                                    M.dialog3.close();
+                                }
+                            }
+                        })
+
+                    })
+                    edit.append(update,del)
+                    var row=$("<tr>").append(col1,col2,col3,col4,col5,edit);
+                    $(".box tbody").append(row);
+                })
+            }
+        })
+    }
+    getNavList()
+</script>
+</body>
+</html>

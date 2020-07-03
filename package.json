@@ -1,0 +1,25 @@
+{
+  "name": "cc",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "corsz": "^1.0.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "express-session": "^1.16.1",
+    "filese": "^1.0.5",
+    "filesr": "^1.2.9",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "mpages": "^1.2.8",
+    "mysql": "^2.17.1",
+    "navcm": "^4.5.2",
+    "qr-image": "^3.2.0",
+    "svg-captcha": "^1.4.0",
+    "ueditor": "^1.2.3"
+  }
+}

@@ -1,0 +1,74 @@
+body{ padding:20px; padding-top:0;}
+table{
+    width:100%;
+    /*让表格边框 重叠*/
+    border-collapse:collapse;
+    border-color:#dedede;
+    border:0;
+	clear:both;
+}
+table td{
+	padding:10px 5px;
+	font-size:14px;
+}
+table tr td:first-child{ text-indent:10px; font-weight: 600;color:#555;}
+table td input{
+	width:700px;
+	height:30px;
+	padding-left:10px;
+	box-sizing:border-box;
+	outline:none;
+	border:1px solid #ddd;
+}
+table td input:focus{
+	border-color:red;
+}
+table td input[type='radio']{
+	width:auto;
+	height:auto;
+	margin-right:20px;
+	margin-left:5px;
+}
+table td select{
+	width:700px;
+	height:30px;
+	border:1px solid #ddd;
+	padding-left:10px;
+}
+table td textarea{
+	width:700px;
+	height:80px;
+	border:1px solid #ddd;
+	box-sizing: border-box;
+	padding:10px 0;
+	padding-left:10px;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.sub{
+	border:0;
+	background:#09c;
+	width:80px;height:30px;
+	color:white;
+	margin:10px 0;
+}
+.tops{
+	height:40px;line-height:40px;
+	overflow:hidden;
+	border-bottom:1px solid #efefef;
+	margin:0 -20px;
+	padding:0 20px;
+	margin-bottom:15px;
+	font-size:13px;
+	color: #999;
+}
+.tops .back_btn{
+	cursor:pointer;
+}
+.tops .back_btn:hover{
+	color:#09c;
+}
+table td img{
+	padding:5px; border:1px solid #eee;
+	vertical-align: middle;
+}
+.img_info{color:#aaa;margin-left:10px;font-size: 12px}

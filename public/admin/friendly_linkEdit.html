@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--弹窗的代码-->
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+	<link rel="stylesheet" href="/admin/css/table_edit.css">
+	<link rel="stylesheet" href="/admin/css/iconfont.css">
+    <style>
+        .box{ padding:40px;}
+        select{ width: 100px}
+    </style>
+</head>
+<body>
+<div class="tops">
+	<span class="title"></span>
+	<span class='iconfont' style='font-size:28px;'>&#xe605;</span>
+	<span class="back_btn" onclick="history.back()">返回</span>
+</div> <form>
+    <table class="box">
+            <tr>
+                <td>链接标题</td>
+                <td><input type="text" name="linktitle" class="linktitle" placeholder="比如：百度"></td>
+            </tr>
+            <tr>
+                <td>链接URL</td>
+                <td><input type="text" name="linkurl" class="linkurl" placeholder="比如：http://www.baidu.com"></td>
+            </tr>
+            <tr>
+                <td>链接状态</td>
+				<td>
+                显示<input type="radio" name="status" class="status"  value="1" checked>
+                隐藏<input type="radio" name="status" class="status" value="0">
+				</td>
+            </tr>
+            <tr>
+                <td>链接排序</td>
+                <td><input type="text" name="sort" class="sort" placeholder="数字小的显示在前面"><td>
+            </tr>
+			<tr>
+                <td></td>
+				<td>
+					<button type="button" class="sub">提交</button>
+				</td>
+			</tr>
+        
+    </table></form>
+<script>
+
+    //1.使用正则来去edit后面等于的数据
+    //"?edit=update&n=1&n2=2".match(/edit=([^&]+)/)
+    //输出：["edit=update", "update"]
+    var eidtStatus=location.search.match(/edit=([^&]+)/);
+    if(eidtStatus){
+        //如果有edit=xx 这种新式的数据 情况下 我们就可以判断操作状态
+        if(eidtStatus[1]=="add"){
+            //导航添加
+            $(".title").text("友链添加");
+            //点击提交按钮
+            $(".sub").click(function(){
+                //1.排空处理
+                //2.ajax发送数据
+                $.ajax({
+                    url:"/admin/friendly_linkAdd",
+                    method:"post",
+                    data:$("form").serialize(),
+                    success:function(data){
+                        if(data=="repeat"){
+                            /*------弹窗代码开始---*/
+                            var M = {}
+                            if(M.dialog1){
+                                return M.dialog1.show();
+                            }
+                            M.dialog1 = jqueryAlert({
+                                'content' : '友链已存在！请更换友链！',
+                                'closeTime' : 1000
+                            })
+                            /*-----弹窗代码结束---*/
+                            return;
+                        }
+                        if(data.affectedRows==1){
+                            /*------弹窗代码开始---*/
+                            var M = {}
+                            if(M.dialog1){
+                                return M.dialog1.show();
+                            }
+                            M.dialog1 = jqueryAlert({
+                                'content' : '添加成功！',
+                                'closeTime' : 400
+                            })
+                            /*-----弹窗代码结束---*/
+                            setTimeout(function(){
+                                location.href="/admin/friendly_link"
+                            },400);
+                        }else{
+                            /*------弹窗代码开始---*/
+                            var M = {}
+                            if(M.dialog1){
+                                return M.dialog1.show();
+                            }
+                            M.dialog1 = jqueryAlert({
+                                'content' : '添加失败！',
+                                'closeTime' : 1000
+                            })
+                            /*-----弹窗代码结束---*/
+                        }
+                    }
+                })
+            })
+        }
+        if(eidtStatus[1]=="update"){
+            //导航更新
+            $(".title").text("导航更新")
+            //得到传过来的id
+            var id=location.search.match(/id=(\d+)/)
+            if(id){//判断有没有id数据，有的话就在下面通过数组取一下
+                id=id[1];
+                //得到id以后 要去查询一下这个数据然后把数据放到页面表中显示
+                $.ajax({
+                    url:"/admin/getFriendly_link",
+                    data:{id:id},
+                    success:function(data){
+                        $(".linktitle").val(data.linktitle);
+                        $(".linkurl").val(data.linkurl);
+                        $(".status").prop({checked:function(i,v){
+                            //判断哪一个单选按钮的值 与 数据里面的数据相等
+                            //如果相等就让这个单选选中，如果不相等就不选中
+                            if($(this).val()==data.status){
+                                return true;
+                            }else{
+                                return false;
+                            }
+                        }});
+                        $(".sort").val(data.sort);
+                    }
+                })
+
+                //点击按钮进行更新
+                //点击提交按钮
+                $(".sub").click(function(){
+                    //1.排空处理
+                    //2.ajax发送数据
+                    $.ajax({
+                        url:"/admin/friendly_linkUpdate",
+                        method:"post",
+                        data:$("form").serialize()+"&id="+id,
+                        success:function(data){
+                            if(data=="repeat"){
+                                /*------弹窗代码开始---*/
+                                var M = {}
+                                if(M.dialog1){
+                                    return M.dialog1.show();
+                                }
+                                M.dialog1 = jqueryAlert({
+                                    'content' : '友链名称已存在！请更换其他的友链！',
+                                    'closeTime' : 1000
+                                })
+                                /*-----弹窗代码结束---*/
+                                return;
+                            }
+                            if(data.affectedRows==1){
+                                /*------弹窗代码开始---*/
+                                var M = {}
+                                if(M.dialog1){
+                                    return M.dialog1.show();
+                                }
+                                M.dialog1 = jqueryAlert({
+                                    'content' : '更新成功！',
+                                    'closeTime' : 400
+                                })
+                                /*-----弹窗代码结束---*/
+                                setTimeout(function(){
+                                    location.href="/admin/friendly_link"
+                                },400);
+                            }else{
+                                /*------弹窗代码开始---*/
+                                var M = {}
+                                if(M.dialog1){
+                                    return M.dialog1.show();
+                                }
+                                M.dialog1 = jqueryAlert({
+                                    'content' : '更新失败！',
+                                    'closeTime' : 1000
+                                })
+                                /*-----弹窗代码结束---*/
+                            }
+                        }
+                    })
+                })
+
+            }
+        }
+    }
+
+
+</script>
+</body>
+</html>

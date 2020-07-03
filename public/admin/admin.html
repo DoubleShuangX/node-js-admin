@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+    <link rel="stylesheet" href="css/iconfont.css">
+</head>
+<body>
+    <DIV class="a_left">
+        <div class="a_left_top"><span class="iconfont" style="font-size: 30px">&#xe663;</span></div>
+        <div class="a_left_nav">
+            <ul>
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont" style="font-size: 30px">&#xe674;</i>
+                        <span>内容管理</span>
+                        <em></em>
+                    </a>
+                    <ul>
+                        <li>
+                            <!--target="abc" 表示当前跳转 abc窗口中跳-->
+                            <a href="/admin/article" target="abc">
+                                <span>文章管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont" style="font-size: 30px">&#xe64d;</i>
+                        <span>导航管理</span>
+                        <em></em>
+                    </a>
+                    <ul>
+                        <li>
+                            <a href="/admin/nav" target="abc">
+                                <span>导航管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont" style="font-size: 30px">&#xe651;</i>
+                        <span>网站设置</span>
+                        <em></em>
+                    </a>
+                    <ul>
+                        <li>
+                            <a href="/admin/website" target="abc">
+                                <span>基本设置</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont" style="font-size: 30px">&#xe644;</i>
+                        <span>友情链接</span>
+                        <em></em>
+                    </a>
+                    <ul>
+                        <li>
+                            <a href="/admin/friendly_link" target="abc">
+                                <span>友链管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont" style="font-size: 30px">&#xe62f;</i>
+                        <span>留言内容</span>
+                        <em></em>
+                    </a>
+                    <ul>
+                        <li>
+                            <a href="/admin/guestbook" target="abc">
+                                <span>留言管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </DIV>
+    <!--右边的部分-->
+    <div class="a_right">
+        <div class="a_right_top">
+            <span class="btn_toggle fa fa-dedent btn"><i>收缩菜单</i></span>
+            <span class="btn_screen fa fa-expand btn"><i>全屏显示</i></span>
+            <span class="btn_reload fa fa-refresh btn"><i>刷新</i></span>
+            <span class="btn_about fa fa-question-circle-o btn"><i>关于</i></span>
+            <span class="btn_user fa fa-user-circle btn">
+                <i>小王</i>
+                <ul class="box">
+                    <li><a href="a.html" target="abc">基本资料</a></li>
+                    <li><a href="b.html" target="abc">修改密码</a></li>
+                    <li><a href="javascript:;" class="outs">退出</a></li>
+                </ul>
+            </span>
+            <span class="btn_theme fa fa-tachometer btn"><i>换肤</i></span>
+            <a href="" class="btn_theme fa  fa-tv btn"><i>前台网页</i></a>
+        </div>
+        <div class="a_right_main">
+            <!--子窗口标签:用来显示的页面-->
+            <iframe name="abc"  src="main.html"></iframe>
+        </div>
+    </div>
+    <!--关于窗口-->
+    <div class="about_box">
+        <div class="about_box_c"></div>
+    </div>
+    <!--皮肤窗口-->
+    <div class="theme_box">
+        <ul class="theme_box_c">
+            <li>
+                <div class="left_top"></div>
+                <div class="right_top"></div>
+                <div class="left_nav">
+                    <ul class="childUl">
+                        <li class="navActive"></li>
+                    </ul>
+                </div>
+                <span></span>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
+<script>
+
+    //获取登录的用户名
+    $.ajax({
+        url:"/users/getUser",
+        success:function(data){
+            $(".btn_user i").text(data.name);
+        }
+    })
+
+    //退出登录
+    $(".outs").click(function(){
+        $.ajax({
+            url:"/users/delUser",
+            success:function(data){
+                if(data){
+                    /*------弹窗代码开始---*/
+                    var M = {}
+                    if(M.dialog1){
+                        return M.dialog1.show();
+                    }
+                    M.dialog1 = jqueryAlert({
+                        'content' : '退出成功！',
+                        'closeTime' : 1000
+                    })
+                    /*-----弹窗代码结束---*/
+                    setTimeout(function(){
+                        location.href="/login"
+                    },1000)
+                }
+            }
+        })
+    })
+
+    //1...点击展开效果
+    //选择下方带有ul的a标签
+   $(".a_left_nav>ul ul").prev("a").click(function(){
+       //点击的时候是让下方ul显示
+       $(this).next().stop().toggle();
+       //让链接标签的三角形上下切换
+       $(this).children("em").toggleClass("active");
+       //让同级 点击过的链接 的ul收起
+       $(this).parent().siblings().children("ul").hide();
+       //让同级 点击过的链接 三角恢复
+       $(this).parent().siblings().children("a").children("em").removeClass("active");
+
+       //按钮图片发生改变
+       $(".btn_toggle").removeClass("fa-indent").addClass("fa-dedent");
+       //文字切换
+       $(".btn_toggle").find("i").text("收缩菜单")
+       //让导航展开
+       $(".a_left").css({transition:"width 0.3s",width:""})
+       //隐藏导航上的文字 与 三角
+       $(".a_left_nav>ul>li>a").children().not("i").show();
+       //让右边的区域紧贴 左边区域
+       $(".a_right").css({transition:"padding 0.3s",paddingLeft:""});
+   })
+
+    //2...点击缩放导航效果
+   $(".btn_toggle").click(function(){
+       //按钮图片发生改变
+       $(".btn_toggle").toggleClass("fa-indent");
+       $(".btn_toggle").toggleClass("fa-dedent");
+       //根据图标的变化来进行 导航展开与收缩效果
+       var ns=$(".btn_toggle").hasClass("fa-indent");
+           //文字切换
+       $(".btn_toggle").find("i").text(ns?"展开菜单":"收缩菜单")
+           //让导航收缩
+       $(".a_left").css({transition:"width 0.3s",width:ns?60:""})
+           //隐藏导航上的文字 与 三角
+       $(".a_left_nav>ul>li>a").children().not("i").toggle();
+           //让右边的区域紧贴 左边区域
+       $(".a_right").css({transition:"padding 0.3s",paddingLeft:ns?60:""});
+          //把展开过得ul隐藏
+       var showUl=$(".a_left_nav>ul>li>ul:visible");
+       showUl.prev().children("em").removeClass("active")
+       showUl.hide();
+   })
+
+    //开启全屏
+    function fullScreen(){
+        //1.选中html标签
+        var el = document.documentElement;
+        //2.检测支持什么全屏的方法
+        var rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+        //3.检测当前rfs 里面是否 有函数，如果有函数就说明支持全屏，如果没有就是undefined
+        //就说明上面的方法都不支持
+        if(typeof rfs != "undefined" && rfs) {
+            rfs.call(el);//如果支持 就调用全屏方法
+        };
+    }
+    //退出全屏
+    function exitScreen(){
+        var el = document;
+        var cfs =el.exitFullscree|| el.webkitCancelFullScreen||el.mozCancelFullScreen||el.msExitFullscreen;
+        if(typeof cfs != "undefined" && cfs) {
+            cfs.call(el);
+        }
+    }
+    //全屏切换
+    $(".btn_screen").click(function(){
+        if($(this).hasClass("fa-expand")){
+            fullScreen();
+            $(this).removeClass("fa-expand").addClass("fa-compress");
+            $(this).find("i").text("退出全屏")
+        }else{
+            exitScreen();
+            $(this).removeClass("fa-compress").addClass("fa-expand")
+            $(this).find("i").text("全屏显示");
+        }
+    })
+
+    //刷新页面 :是刷新子窗口里面的页面
+    $(".btn_reload").click(function(){
+        //获取iframe里面的子窗口对象contentWindow
+      $(".a_right_main>iframe")[0].contentWindow.location.reload(true);
+    })
+
+    //点击用户
+    $(".btn_user").hover(function(){
+        $(this).children(".box").stop(true,true).slideDown("fast")
+    },function(){
+        $(this).children(".box").stop(true,true).slideUp("fast")
+    }).children(".box").click(function(){ $(this).stop().hide()})
+
+    //点击关于
+    $(".btn_about").click(function(){
+        $(".btn_user").children(".box").stop().hide()
+        $(".about_box").fadeIn();
+        $(".about_box_c").css({transform:" translateX(0%)",opacity:1})
+    });
+    $(".about_box").click(function(){
+        $(".about_box").fadeOut();
+        $(".about_box_c").css({transform:"",opacity:""})
+    })
+    $(".about_box_c").click(function(e){e.stopPropagation()})
+
+    //点击换肤
+    $(".btn_theme").click(function(){
+        $(".btn_user").children(".box").stop().hide()
+        $(".theme_box").fadeIn();
+        $(".theme_box_c").css({transform:" translateX(0%)",opacity:1})
+    });
+    $(".theme_box").click(function(){
+        $(".theme_box").fadeOut();
+        $(".theme_box_c").css({transform:"",opacity:""})
+    })
+    $(".theme_box_c").click(function(e){e.stopPropagation()})
+
+    //皮肤数据
+    var Theme=[
+        {
+            left_top:{background:"red",color:"white"},
+            right_top:{background:"blue",color:"white"},
+            left_nav:{background:"red",color:"white",navActive:{background:"red",color:"white"},childUl:{background:"red",color:"white"}}
+        },
+        {
+            left_top:{background:"red",color:"white"},
+            right_top:{background:"blue",color:"white"},
+            left_nav:{background:"orange",color:"white",navActive:{background:"red",color:"white"},childUl:{background:"blue",color:"white"}}
+        }
+    ];
+    //把皮肤数据生成标签并插入 皮肤盒子里面
+    $.each(Theme,function(i,v){
+        var newLi=$(".theme_box_c>li").first().clone(true);
+        $.each(v,function(i,v){
+            newLi.children("."+i).css(v);
+            if(v.navActive){
+                newLi.children("."+i).find(".navActive").css(v.navActive);
+                newLi.children("."+i).find(".childUl").css(v.childUl);
+            }
+        })
+        $(".theme_box_c").append(newLi);
+    });
+
+
+    //点击某个皮肤 把颜色放到本地存储 和 界面上
+    $(".theme_box_c>li").click(function(){
+        //把数据存到本地存储
+        localStorage.setItem("amdin_theme",JSON.stringify(Theme[$(this).index()]));
+        localStorage.setItem("amdin_theme_Id",$(this).index());
+        //把数据放到标签上去
+        render();
+    })
+    $(".theme_box_c>li").first().remove();
+
+    function render(){
+        var admin_theme=JSON.parse(localStorage.getItem("amdin_theme"));
+        var admin_theme_Id=JSON.parse(localStorage.getItem("amdin_theme_Id"));
+            $(".a_left").css(admin_theme.left_nav).find(".a_left_nav ul li ul").css(admin_theme.left_nav.childUl);
+            $(".a_left_top").css(admin_theme.left_top);
+            $(".a_right_top").css(admin_theme.right_top);
+            $(".theme_box_c>li").eq(admin_theme_Id).addClass("active").siblings().removeClass("active");
+    }
+    render();
+</script>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--弹窗的代码-->
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+    <link rel="stylesheet" href="/admin/css/table.css">
+    <link rel="stylesheet" href="/admin/css/iconfont.css">
+</head>
+<body>
+<div class="tops" style="margin-bottom: 15px">留言页面管理<span class='iconfont' style='font-size:28px;'>&#xe605;</span><span class="back_btn" onclick="history.back()">返回</span></div>
+<table class="box" border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th align="left">留言姓名</th>
+        <th>联系方式</th>
+        <th>留言内容</th>
+        <th>IP记录</th>
+        <th>留言时间</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<script>
+    function getNavList(){
+        $(".box tbody").html("")
+        $.ajax({
+            url:"/admin/guestbookList",
+            success:function(data){
+                $.each(data,function(k,v){
+                    var col1=$("<td>").text(v.id);
+                    var col2=$("<td style='text-align:left'>").text(v.name);
+                    var col3=$("<td style='text-align:left'>").text(v.contact);
+                    var col4=$("<td>").html("<div style='width:150px;text-align:justify'>"+v.content+"</div>");
+                    var col5=$("<td>").text(v.ip);
+                    var col6=$("<td>").html("<span class='iconfont' style='font-size:30px;'>&#xe642;</span>"+new Date(v.time).toLocaleString());
+                    var edit=$("<td>")
+                    var del=$("<span class='del_btn'><span class='iconfont' style='font-size:23px;'>&#xe654;</span></span>").prop({id: v.id});
+                    del.click(function(){
+                        var id=$(this).prop("id");
+                        var M={}
+                        if(M.dialog3){
+                            return M.dialog3.show();
+                        }
+                        M.dialog3 = jqueryAlert({
+                            'title'   : '删除提示',
+                            'content' : '你确定要删除吗？',
+                            'modal'   : true,
+                            'width':'230px',
+                            'animateType' : 'linear',
+                            'buttons' :{
+                                '确定' : function(){
+                                    M.dialog3.close();
+                                    $.ajax({
+                                        url:"/admin/guestbookListDel",
+                                        data:{id:id},
+                                        success:function(data){
+                                            if(data.affectedRows){
+                                                var M={}
+                                                if(M.dialog1){
+                                                    return M.dialog1.show();
+                                                }
+                                                M.dialog1 = jqueryAlert({
+                                                    'content' : "删了"+data.affectedRows+"个留言",
+                                                    'closeTime'    : 300,
+                                                })
+                                            }
+                                            setTimeout(function(){
+                                                getNavList()
+                                            },500)
+
+                                        }
+                                    })
+                                },
+                                '取消' : function(){
+                                    M.dialog3.close();
+                                }
+                            }
+                        })
+
+                    })
+                    edit.append(del)
+                    var row=$("<tr>").append(col1,col2,col3,col4,col5,col6,edit);
+                    $(".box tbody").append(row);
+                })
+            }
+        })
+    }
+    getNavList()
+</script>
+</body>
+</html>

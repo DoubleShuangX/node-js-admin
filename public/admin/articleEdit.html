@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--弹窗的代码-->
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+	<link rel="stylesheet" href="/admin/css/table_edit.css">
+	<link rel="stylesheet" href="/admin/css/iconfont.css">
+</head>
+<body>
+
+<div class="tops">
+	<span class="title"></span>
+	<span class='iconfont' style='font-size:28px;'>&#xe605;</span>
+	<span class="back_btn" onclick="history.back()">返回</span>
+</div>
+<form>
+    <!--表格标签:表格用来装行-->
+    <table>
+        <!--行：行用来装列-->
+        <tr>
+            <!--列：列用来装内容-->
+            <td>标题</td>
+            <td><input type="text" name="article_title" class="article_title"></td>
+        </tr>
+        <tr>
+            <td>作者</td>
+            <td><input type="text" name="author" class="author"></td>
+        </tr>
+        <tr>
+            <td>状态</td>
+            <td>
+                发布<input type="radio" value="1" name="status" class="status" checked>
+                草稿<input type="radio" value="0" name="status" class="status">
+            </td>
+        </tr>
+        <tr>
+            <td>所属栏目</td>
+            <td><select name="pid" class="pid"><option value="-1">未分类</option></select></td>
+        </tr>
+        <tr>
+            <td>类型</td>
+            <td>
+                <select name="classType" class="classType">
+                    <option value="0">普通文章</option>
+                    <option value="1">缩略图文章</option>
+                    <option value="2">广告位文章</option>
+                </select>
+                <div class="upImg" style="display: none;margin-top:20px;">
+                    <!--正常来说 file标签只能选一个文件 如果要选多个文件 就需要加multiple属性-->
+                    <!--<input type="file" name="img" multiple>-->
+                    <input type="file" name="img" id="img" style="display: none">
+                    <img src="/admin/img/upImg.jpg" width="100" class="upImgicon">
+                </div>
+                <script>
+                    //点击图片，后 自动触发file标签的点击事件
+                    $(".upImgicon").click(function(){
+                        $("#img").click();//自动点击 file标签 ,触发file标签的默认事件行为 打开窗口选文件
+                    })
+                    //选中图片后 需要检测格式png,jpg,gif
+                    $("#img").change(function(){
+                        var fd=document.getElementById("img").files[0];
+                        console.log(fd.type)
+                        if(fd.type.search(/\/(png|jpg|gif|svg|webp|bmp|jpeg)$/i)!=-1){
+                            //alert("是图片");
+                            var fData=new FormData();
+                            fData.append("imgxx",fd); //这个img是数据名称 后端会用req.body.img接收
+                            $.ajax({
+                                url:"/admin/upImg",
+                                method:"post",
+                                processData:false,//防止jq自动把ajax中的data属性中 文件数据转成字符串,
+                                contentType:false,
+                                /*防止jq把发送的数据转成 application/x-www-form-urlencoded 编码
+//                              这种编码 不能用于上传文件，只用用于发送post文本字符串，文件上传的编码是multipart/form-data
+                                 contentType:false 相当于 让jq自动识别数据 按照数据的类型自动配置编码
+                                */
+                                data:fData,
+                                success:function(data){
+                                    if(data){
+                                        $(".upImgicon").attr({src:"/"+data})
+                                    }else{
+										var M={}
+                                       if(M.dialog1){
+											return M.dialog1.show();
+										}
+										M.dialog1 = jqueryAlert({
+											'content' : '上传失败...'
+										})
+                                    }
+                                }
+                            })
+                            /*
+                                //原生ajax中的 post请求2种形式
+                                var sss=new XMLHttpRequest()
+                                //post请求文件上传
+                                sss.setRequestHeader("Content-Type","multipart/form-data")
+                                //post请求发送简单文本数据
+                                sss.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
+                            */
+
+                        }else{
+									var M={}
+                                    if(M.dialog1){
+											return M.dialog1.show();
+									}
+									M.dialog1 = jqueryAlert({
+											'content' : "对不起，只能上传图片！"
+									})
+                        
+                        }
+                    })
+
+                    $(".classType").change(function(){
+                        if(parseInt($(this).val())){
+                            $(".upImg").slideDown();
+                        }else{
+                            $(".upImg").slideUp();
+                        }
+                    })
+                </script>
+            </td>
+        </tr>
+        <tr>
+            <td>来源</td>
+            <td><input type="text" name="source" class="source"></td>
+        </tr>
+        <tr>
+            <td>关键字</td>
+            <td><input type="text" name="keywords" class="keywords"></td>
+        </tr>
+        <tr>
+            <td>描述</td>
+            <td>
+                <textarea name="description" class="description"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>标签</td>
+            <td><input type="text" class="tag"></td>
+        </tr>
+        <tr>
+            <td>内容</td>
+            <td class="tx">
+                <!-- 加载编辑器的容器 -->
+                <script id="container" name="content" type="text/plain">
+
+                </script>
+            </td>
+        </tr>
+        <tr>
+           <td></td>
+            <td ><button type="button" class="sub">提交</button></td>
+        </tr>
+    </table>
+</form>
+<!-- 配置文件 -->
+<script type="text/javascript" src="/ueditor/ueditor.config.js"></script>
+<!-- 编辑器源码文件 -->
+<script type="text/javascript" src="/ueditor/ueditor.all.js"></script>
+<!-- 实例化编辑器 -->
+<script type="text/javascript">
+    var ue = UE.getEditor('container',{
+        initialFrameWidth :700,
+        initialFrameHeight: 200,
+        autoClearEmptyNode:false,
+    });
+</script>
+<script>
+    function getSelectV(){
+        $.ajax({
+            url:"/admin/navSelect",
+            async:false,
+            success:function(data){
+                $(".pid").html("<option value='-1' selected>未分类</option>"+data);
+            }
+        })
+    }
+    getSelectV();
+    var eidtStatus=location.search.match(/edit=([^&]+)/);
+    if(eidtStatus){
+        //如果有edit=xx 这种新式的数据 情况下 我们就可以判断操作状态
+        if(eidtStatus[1]=="add"){
+            //实现添加的操作
+            $(".title").text("添加文章");
+            //提交数据
+            $(".sub").click(function(){
+                //1.排空处理
+                //-1.文件属性需要用FormData 来装
+                var f=new FormData();
+                //f.append("数据名称",数据);
+
+                f.append("title",$(".article_title").val());
+                f.append("author",$(".author").val());
+                f.append("status",$(".status:checked").val());
+                f.append("pid",$(".pid").val());
+                f.append("classType",$(".classType").val());
+                f.append("source",$(".source").val());
+                f.append("keywords",$(".keywords").val());
+                f.append("description",$(".description").val());
+                f.append("tag",$(".tag").val());
+                f.append("content",ue.getContent());//ue.getConent()是用来获取富文本编辑器里面的内容
+                f.append("img",document.getElementById("img").files[0]);
+                //2.ajax提交
+
+                $.ajax({
+                    url:"/admin/addArticle",
+                    method:"post",
+                    processData:false,//防止jq自动把ajax中的data属性中 文件数据转成字符串,
+                    contentType:false,
+                    data:f,
+                    success:function(data){
+                        if(data=="repeat"){
+                  
+									var M={}
+                                    if(M.dialog1){
+										return M.dialog1.show();
+									}
+									M.dialog1 = jqueryAlert({
+										'content' : "文章标题重复！"
+									})
+                            return;
+                        }
+                        if(data. affectedRows>0){
+                            var M={}
+                                    if(M.dialog1){
+											return M.dialog1.show();
+									}
+									M.dialog1 = jqueryAlert({
+											'content' : "添加成功！"
+									})
+                           setTimeout(function(){
+										location.href="/admin/article";
+									},1000)
+                        };
+                    }
+                })
+            })
+        }
+        if(eidtStatus[1]=="update"){
+            //实现更新的操作
+            $(".title").text("更新文章");
+            var id=location.search.match(/id=(\d+)/);
+            var old_img={};
+            if(id){
+                $.ajax({
+                    url:"/admin/articleGet",
+                    async:false,
+                    data:{id:id[1]},
+                    success:function(data){
+                        //收到数据
+                        if(data){
+                            old_img={img:data.img, img_path:data.img_path};
+                            $(".article_title").val(data.title)
+                            $(".author").val(data.author);
+                            $(".status").prop({checked:function(){
+                                return $(this).val()==data.status?true:false;
+                            }});
+                            $(".pid option").prop({selected:function(){
+                                return $(this).val()==data.pid?true:false;
+                            }});
+                            $(".classType option").prop({selected:function(){
+                                return $(this).val()==data.classType?true:false;
+                            }})
+                            $(".source").val(data.source);
+                            $(".keywords").val(data.keywords);
+                            $(".description").val(data.description);
+                            $(".tag").val(data.tag);
+                            //等ue插件加载完以后再设置数据
+                            ue.ready(function() {
+                                ue.setContent(data.content)
+                            });
+                            //如果是缩略图或广告位需要显示图片
+                            if(data.classType>0){
+                                $(".upImg").slideDown();
+                                $(".upImgicon").attr({src:"/"+data.img});
+                            }
+                        }
+                    }
+                })
+            }
+            //提交数据
+            $(".sub").click(function(){
+                //1.排空处理
+                //-1.文件属性需要用FormData 来装
+                var f=new FormData();
+                //f.append("数据名称",数据);
+
+                f.append("title",$(".article_title").val());
+                f.append("author",$(".author").val());
+                f.append("status",$(".status:checked").val());
+                f.append("pid",$(".pid").val());
+                f.append("classType",$(".classType").val());
+                f.append("source",$(".source").val());
+                f.append("keywords",$(".keywords").val());
+                f.append("description",$(".description").val());
+                f.append("tag",$(".tag").val());
+                f.append("content",ue.getContent());//ue.getConent()是用来获取富文本编辑器里面的内容
+
+               /*----新增开始-----*/
+                /*把文章之前的图片 与id 传给更新接口，这样更新接口就知道我们要更新那条数据*/
+                f.append("oldimg",old_img.img);
+                f.append("oldimg_path",old_img.img_path);
+                f.append("id",id[1]);
+                /*----新增结束-----*/
+
+
+                f.append("img",document.getElementById("img").files[0]);
+
+                //2.ajax提交
+                $.ajax({
+                    url:"/admin/updateArticle",
+                    method:"post",
+                    processData:false,//防止jq自动把ajax中的data属性中 文件数据转成字符串,
+                    contentType:false,
+                    data:f,
+                    success:function(data){
+                        if(data=="repeat"){
+									var M={}
+                                    if(M.dialog1){
+											return M.dialog1.show();
+									}
+									M.dialog1 = jqueryAlert({
+											'content' : "文章标题重复！"
+									})
+                            return;
+                        }
+                        if(data. affectedRows>0){
+									var M={}
+                                    if(M.dialog1){
+											return M.dialog1.show();
+									}
+									M.dialog1 = jqueryAlert({
+											'content' : "更新成功！"
+									})
+									setTimeout(function(){
+										location.href="/admin/article";
+									},1000)
+                           
+                        };
+                    }
+                })
+            })
+        }
+    }
+
+
+</script>
+</body>
+</html>

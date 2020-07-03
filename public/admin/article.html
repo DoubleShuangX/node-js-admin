@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--弹窗的代码-->
+    <link rel="stylesheet" href="alert/alert.css">
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="alert/alert.js"></script>
+    <link rel="stylesheet" href="/admin/css/table.css">
+	<link rel="stylesheet" href="/admin/css/iconfont.css">
+</head>
+<body>
+<div class="tops">文章管理页面<span class='iconfont' style='font-size:28px;'>&#xe605;</span><span class="back_btn" onclick="history.back()">返回</span></div>
+<div class="tool">
+	<a href="/admin/articleEdit?edit=add" class="adds">&nbsp;&nbsp;新建文章<span class='iconfont' style='font-size:26px;'>&#xe60f;</span></a>
+	<div class="search s_btn">
+		<input type="text">
+		<button>搜索文章</button>
+		<script>
+			//记录搜索的查询状态 默认搜索是all
+			var search_type={select:"all"};
+			//点击搜索
+			$(".search button").click(function(){
+				var v=$(".search input").val();
+				select({select:"title_search",title:v});
+				search_type={select:"title_search",title:v};
+			})
+		</script>
+	</div>
+	<div class="s_column">
+		【查询栏目文章】
+		<select class="pid"></select>
+		<script>
+			function getSelectV(){
+				$.ajax({
+					url:"/admin/navSelect",
+					success:function(data){
+						$(".pid").html("<option value='-1' selected>未分类</option>"+data);
+						$(".pid").change(function(){
+							//把当前 选中栏目的id 传给文章 数据对比文章的pid
+							//这样就可以找到 每一个栏目下的文章，因为我们之前添加
+							//文章的时候 选了所属栏目，文章的pid就记录的所属栏目的id
+							select({select:"pid",pid:$(this).val()})
+							search_type={select:"pid",pid:$(this).val()};
+						})
+					}
+				})
+			}
+			getSelectV();
+		</script>
+	</div>
+	<div class="classType">
+		【查询文章类型】
+		<select class="s_classType">
+			<option value="0">普通文章</option>
+			<option value="1">缩略图文章</option>
+			<option value="2">广告banner文章</option>
+		</select>
+		<script>
+			$(".s_classType").change(function(){
+				//把当前select选中的option标签的值 发送给文章数据 在文章数据里面查一下
+				//这个文章的类型
+				select({select:"classType",classType:$(this).val()})
+				search_type={select:"classType",classType:$(this).val()};
+			})
+		</script>
+	</div>
+</div>
+<!--文章列表数据-->
+<table border="1">
+    <!--表格的标题-->
+    <thead>
+        <!--th相当于td 只不过th有标题的含义功能-->
+        <tr>
+            <th>ID</th>
+            <th>文章标题</th>
+            <th>状态</th>
+            <th>类型</th>
+            <th>图片</th>
+            <th>浏览量</th>
+            <th>发布时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <!--表格的主要列表内容-->
+    <tbody>
+      <!--这里放tr与td 把后台的数据加载进来-->
+    </tbody>
+    <!--表格的尾部-->
+    <tfoot><tr><td colspan="9"></td></tr></tfoot>
+</table>
+
+
+<script>
+    function select(datas){
+        $.ajax({
+            url:"/admin/articleList",
+            data:datas,
+            success:function(data){
+                if(data.pagings.pageList.length>0){
+                    //data.pagings.pageList.length 表示判断页面是不是大于0，如果大于0就说明有数据
+                    var sD=data.sqlData;
+                    $("tbody").html("")//防止数据累加
+                    $("tfoot tr td").html("")//防止数据累加
+                    $.each(sD,function(i,v){
+                        //生成td数据
+                        var td1=$("<td>").text(v.id);
+                        var spanStyle="width:100px; display: block;overflow: hidden;text-overflow: ellipsis;white-space: nowrap'"
+                        var td2=$("<td>").html(`<span title='${v.title}' style='${spanStyle}'>${v.title}</span>`);
+                        var td4=$("<td>").text(parseInt(v.status)?"发布":"草稿");
+                        var td5=$("<td>").html(["普通文章<i class='iconfont' style='font-size:30px'>&#xe659;</i>","缩略图文章<i class='iconfont' style='font-size:30px'>&#xe65a;</i>","广告位文章<i class='iconfont' style='font-size:30px'>&#xe65a;</i>"][v.classType]);
+                        var td6=$("<td>").html(v.img?"<img class='img_ps' width='100' src='/"+ v.img+"'>":"<i class='iconfont' style='font-size:30px'>&#xe62b;</i>");
+                        var td7=$("<td>").html((v.readnum?v.readnum:0)+"<i class='iconfont' style='font-size:30px'>&#xe679;</i>");
+                        var td8=$("<td>").text(new Date(v.time).toLocaleDateString());
+                        var edit=$("<td>");
+                        var updateLink=$("<a class='update_btn' href='/admin/articleEdit?edit=update&id="+ v.id+"'><span class='iconfont' style='font-size:23px;'>&#xe652;</span></a>");
+
+                       var pk=data.pagings;
+
+                        var deletes=$("<span class='del_btn'><span class='iconfont' style='font-size:23px;'>&#xe654;</span></span>")
+                        deletes.attr({id:v.id,img_path: v.img_path});
+                        deletes.click(function(){
+                            var olds={
+                                id:$(this).attr("id"),
+                                img_path:$(this).attr("img_path")
+                            }
+                            var M={}
+                            // 判断是否已存在，如果已存在则直接显示
+                            if(M.dialog3){
+                                return M.dialog3.show();
+                            }
+                            M.dialog3 = jqueryAlert({
+                                'title'   : '删除提示！',
+                                'content' : '你确定要删除吗？',
+                                'modal'   : true,
+                                'width'   :"230px",
+                                'buttons' :{
+                                    '确定' : function(){
+                                        M.dialog3.close();
+                                        $.ajax({
+                                            url:"/admin/articleDel",
+                                            method:"post",
+                                            data:olds,
+                                            success:function(data){
+
+                                                if(data.affectedRows>0){
+                                                    setTimeout(function(){
+                                                        //删除以后把列表重新刷一遍
+                                                        search_type.page=pk.page
+                                                        select(search_type);
+                                                    },500)
+
+                                                }else{
+                                                    if(M.dialog1){
+                                                        return M.dialog1.show();
+                                                    }
+                                                    M.dialog1 = jqueryAlert({
+                                                        'content' : "删除失败！"
+                                                    })
+                                                }
+                                            }
+                                        })
+                                    },
+                                    '取消' : function(){
+                                        M.dialog3.close();
+                                    }
+                                }
+                            })
+
+
+                        })
+                        edit.append(updateLink,deletes);
+                        //把td数据放到tr里面去
+                        var tr=$("<tr>").append(td1,td2,td4,td5,td6,td7,td8,edit);
+                        //把tr数据放到tbody里面去
+                        $("tbody").append(tr);
+                    });
+                    //分页效果
+                    console.log(data.pagings)
+					
+					var firstP=$("<button>").text("第一页");
+					firstP.click(function(){  search_type.page=1; select(search_type);});
+					var prevP=$("<button>").text("上一页");
+					prevP.click(function(){  search_type.page=data.pagings.prev; select(search_type);});
+					$("tfoot tr td").append(firstP,prevP);
+                    $.each(data.pagings.pageList,function(i,v){
+                        //data.pagings.page 可以获取当前是第几页
+                        //v是当前循环出来的 页码数量
+                       var actives=data.pagings.page==v?"page_active":""
+                        var btn=$("<button>").text(v).addClass(actives)
+                        btn.click(function(){
+                            //把分页的数据传给后台
+                            search_type.page=$(this).text();
+                            //console.log(search_type)
+                            select(search_type);
+                        })
+                        $("tfoot tr td").append(btn);
+
+                    });
+					var lastP=$("<button>").text("末尾页");
+					lastP.click(function(){  search_type.page=data.pagings.last; select(search_type);});
+					var nextP=$("<button>").text("下一页");
+					nextP.click(function(){  search_type.page=data.pagings.next; select(search_type);});
+					$("tfoot tr td").append(nextP,lastP);
+
+                }else{
+                    //如果没有数据 就需要清理上一次的效果
+                    $("tbody").html("<tr><td colspan='9'>没有数据</td></tr>")//防止数据累加
+                    $("tfoot tr td").html("")//防止数据累加
+                }
+            }
+        })
+    }
+    select({select:"all"})
+</script>
+</body>
+</html>
