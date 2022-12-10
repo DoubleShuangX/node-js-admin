@@ -9,7 +9,7 @@
     "cookie-parser": "~1.4.4",
     "corsz": "^1.0.3",
     "debug": "~2.6.9",
-    "express": "~4.16.1",
+    "express": "~4.17.3",
     "express-session": "^1.16.1",
     "filese": "^1.0.5",
     "filesr": "^1.2.9",
